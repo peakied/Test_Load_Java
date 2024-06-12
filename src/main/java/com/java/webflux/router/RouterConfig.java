@@ -25,6 +25,7 @@ public class RouterConfig {
                 .GET("/router/customers/stream", handlerStream::getCustomer)
                 .GET("router/customers/{input}", handler::findCustomer)
                 .POST("/router/customers/save", handler::saveCustomer)
+                .GET("/router/user", handler::getUsersFromGolang)
                 .build();
     }
 }
