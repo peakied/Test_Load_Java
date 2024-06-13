@@ -1,7 +1,6 @@
 package com.java.webflux.router;
 
-import com.java.webflux.handler.CustomerHandler;
-import com.java.webflux.handler.CustomerStreamHandler;
+import com.java.webflux.handler.PhoneHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,21 +10,15 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
 public class RouterConfig {
-
     @Autowired
-    private CustomerHandler handler;
-
-    @Autowired
-    private CustomerStreamHandler handlerStream;
+    private PhoneHandler phoneHandler;
 
     @Bean
     public RouterFunction<ServerResponse> routerFunction() {
         return RouterFunctions.route()
-                .GET("/router/customers", handler::loadCustomers)
-                .GET("/router/customers/stream", handlerStream::getCustomer)
-                .GET("router/customers/{input}", handler::findCustomer)
-                .POST("/router/customers/save", handler::saveCustomer)
-                .GET("/router/user", handler::getUsersFromGolang)
+                .GET("/router/phone/{id}",phoneHandler ::getUsersFromGolang)
+                .GET("/router/phone/stream/{id}",phoneHandler ::getUsersFromGolangStream)
+                .GET("/router/phone/load/{id}",phoneHandler ::getUsersFromGolangLoadBalancer)
                 .build();
     }
 }
