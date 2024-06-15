@@ -21,48 +21,52 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 public class PhoneHandler {
 
-    private final List<WebClient> clients;
-    private final ObjectMapper objectMapper;
-    private final WebClient webClient = WebClient.builder().baseUrl("http://localhost:8081").build();
+    @Autowired
+    private List<WebClient> clients;
 
     @Autowired
-    public PhoneHandler(List<WebClient> clients, ObjectMapper objectMapper) {
-        this.clients = clients;
-        this.objectMapper = objectMapper;
-    }
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private WebClient webClient;
 
     public Mono<ServerResponse> getUsersFromGolang(ServerRequest request) {
-        return callGolangService(request, MediaType.APPLICATION_JSON);
+        return callGolangService(request);
     }
 
     public Mono<ServerResponse> getUsersFromGolangStream(ServerRequest request) {
-        return callGolangService(request, MediaType.APPLICATION_STREAM_JSON);
+        return callGolangService(request);
     }
 
     public Mono<ServerResponse> getUsersFromGolangLoadBalancer(ServerRequest request) {
-        return callGolangService(request, MediaType.APPLICATION_JSON, true);
+        return callGolangService(request, true);
     }
 
-    private Mono<ServerResponse> callGolangService(ServerRequest request, MediaType mediaType) {
-        return callGolangService(request, mediaType, false);
+    private Mono<ServerResponse> callGolangService(ServerRequest request) {
+        return callGolangService(request, false);
     }
 
-    private Mono<ServerResponse> callGolangService(ServerRequest request, MediaType mediaType, Boolean client) {
-        WebClient usedClient = (client) ? webClient : selectWebClient();
+    private Mono<ServerResponse> callGolangService(ServerRequest request, Boolean client) {
+        WebClient usedClient = (!client) ? webClient : selectWebClient();
 
         return usedClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/phone").queryParam("number", request.pathVariable("id")).build())
+                .uri(uriBuilder -> uriBuilder.path("/phone")
+                        .queryParam("number", request.pathVariable("id"))
+                        .build())
                 .retrieve()
                 .bodyToMono(String.class)
                 .map(string -> string.replace("\r", ""))
-                .flatMap(sanitized -> parseAndRespond(sanitized, mediaType))
-                .onErrorResume(WebClientResponseException.class, e -> ServerResponse.status(e.getStatusCode()).bodyValue(e.getResponseBodyAsString()))
+                .flatMap(this::parseAndRespond)
+                .onErrorResume(WebClientResponseException.class, e -> ServerResponse.status(e.getStatusCode())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(e.getResponseBodyAsString()))
                 .subscribeOn(Schedulers.boundedElastic());
+
     }
 
-    private Mono<ServerResponse> parseAndRespond(String responseBody, MediaType mediaType) {
+    private Mono<ServerResponse> parseAndRespond(String responseBody) {
         try {
-            return ServerResponse.ok().contentType(mediaType).bodyValue(objectMapper.readValue(responseBody, PhoneResponse.class));
+            return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).bodyValue(objectMapper.readValue(responseBody, PhoneResponse.class));
         } catch (JsonProcessingException e) {
             return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error parsing phone response", e));
@@ -73,4 +77,5 @@ public class PhoneHandler {
         int index = ThreadLocalRandom.current().nextInt(clients.size());
         return clients.get(index);
     }
+
 }
