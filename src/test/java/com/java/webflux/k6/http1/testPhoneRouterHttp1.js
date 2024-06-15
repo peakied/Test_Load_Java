@@ -7,7 +7,7 @@ export const options = {
 };
 
 export default function () {
-    const url = `http://localhost:9191/router/phone/0711555001`;
+    const url = `http://localhost:9191/8081/router/phone/0711555001`;
     const headers = { 'Content-Type': 'application/json' };
 
     const res = http.get(url, { headers });

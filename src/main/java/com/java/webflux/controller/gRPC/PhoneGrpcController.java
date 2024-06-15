@@ -20,6 +20,7 @@ public class PhoneGrpcController {
                 .build();
         asyncStub = LookupServiceGrpc.newStub(channel);
     }
+
     @GetMapping("/phone/grpc/{id}")
     public Mono<Lookup.LookupRes> getLookupData(@PathVariable("id") String id) {
         Lookup.LookupReq request = Lookup.LookupReq.newBuilder().setPhoneNumber(id).build();

@@ -16,9 +16,9 @@ public class RouterConfig {
     @Bean
     public RouterFunction<ServerResponse> routerFunction() {
         return RouterFunctions.route()
-                .GET("/router/phone/{id}",phoneHandler ::getUsersFromGolang)
-                .GET("/router/phone/stream/{id}",phoneHandler ::getUsersFromGolangStream)
+                .GET("/{path}/router/phone/{id}",phoneHandler ::getUsersFromGolang)
                 .GET("/router/phone/load/{id}",phoneHandler ::getUsersFromGolangLoadBalancer)
+                .GET("/router/phone/gprc/{id}",phoneHandler ::getUsersFromGolangGrpc)
                 .build();
     }
 }
