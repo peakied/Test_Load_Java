@@ -2,8 +2,19 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 export const options = {
-    vus: 900,
-    duration: '15s',
+    discardResponseBodies: true,
+    scenarios: {
+        contacts: {
+            executor: 'ramping-vus',
+            startVUs: 0,
+            stages: [
+                { duration: '5s', target: 3000 },
+                { duration: '20s', target: 3000},
+                { duration: '5s', target: 0}
+            ],
+            gracefulRampDown: '0s',
+        },
+    },
 };
 
 export default function () {
