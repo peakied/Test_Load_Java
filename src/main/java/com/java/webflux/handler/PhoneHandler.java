@@ -20,14 +20,10 @@ import protos.LookupServiceGrpc;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class PhoneHandler {
-
-    @Autowired
-    private List<WebClient> clients;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -103,8 +99,8 @@ public class PhoneHandler {
         int index = ThreadLocalRandom.current().nextInt(3);
         return switch (index) {
             case 0 -> callGolangService(request, "8081");
-            case 1 -> callGolangService(request, "8082");
-            case 2 -> getUsersFromGolangGrpc(request);
+            case 1 -> callGolangService(request, "8084");
+            case 2 -> callGolangService(request, "8085");
             default -> Mono.empty();
         };
     }
