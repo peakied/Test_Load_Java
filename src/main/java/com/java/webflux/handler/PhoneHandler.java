@@ -6,7 +6,6 @@ import com.java.webflux.response.PhoneResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -21,20 +20,20 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class PhoneHandler {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-
+    private final ObjectMapper objectMapper;
     private final LookupServiceGrpc.LookupServiceStub asyncStub;
+    private final AtomicInteger counter = new AtomicInteger(0);
 
-    public PhoneHandler() {
+    public PhoneHandler(ObjectMapper objectMapper) {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8083)
                 .usePlaintext()
                 .build();
+        this.objectMapper = objectMapper;
         asyncStub = LookupServiceGrpc.newStub(channel);
     }
 
@@ -96,13 +95,27 @@ public class PhoneHandler {
     }
 
     public Mono<ServerResponse> getUsersFromGolangLoadBalancer(ServerRequest request) {
-        int index = ThreadLocalRandom.current().nextInt(3);
-        return switch (index) {
-            case 0 -> callGolangService(request, "8081");
-            case 1 -> callGolangService(request, "8084");
-            case 2 -> callGolangService(request, "8085");
+//        http1
+//        return switch (getNextServerIndex()) {
+//            case 0 -> callGolangService(request, "8081");
+//            case 1 -> callGolangService(request, "8084");
+//            case 2 -> callGolangService(request, "8085");
+//            case 3 -> callGolangService(request, "8086");
+//            case 4 -> callGolangService(request, "8087");
+//            default -> Mono.empty();
+//        };
+
+        return switch (getNextServerIndex()) {
+            case 0 -> callGolangService(request, "8082");
+            case 1 -> callGolangService(request, "8088");
+            case 2 -> callGolangService(request, "8089");
+            case 3 -> callGolangService(request, "8090");
+            case 4 -> callGolangService(request, "8091");
             default -> Mono.empty();
         };
     }
 
+    private int getNextServerIndex() {
+        return counter.getAndUpdate(i -> (i + 1) % 5);
+    }
 }
