@@ -1,0 +1,16 @@
+syntax = "proto3";
+package protos;
+option go_package="./protos";
+
+service LookupService {
+  rpc Lookup(LookupReq) returns (LookupRes);
+}
+
+message LookupReq {
+  string PhoneNumber = 1;
+}
+
+message LookupRes {
+  optional string error = 1;
+  optional string Name = 2;
+}
