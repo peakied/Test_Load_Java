@@ -19,6 +19,7 @@ import protos.LookupServiceGrpc;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -29,7 +30,7 @@ public class PhoneHandler {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     public PhoneHandler(ObjectMapper objectMapper) {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("mock-lookup", 8083)
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8083)
                 .usePlaintext()
                 .build();
         this.objectMapper = objectMapper;
@@ -43,21 +44,23 @@ public class PhoneHandler {
     public Mono<ServerResponse> getUsersFromGolangGrpc(ServerRequest request) {
         Lookup.LookupReq grpcRequest = Lookup.LookupReq.newBuilder().setPhoneNumber(request.pathVariable("id")).build();
 
-        return Mono.create(sink -> asyncStub.lookup(grpcRequest, new StreamObserver<>() {
-            @Override
-            public void onNext(Lookup.LookupRes value) {
-                sink.success(value);
-            }
+        return Mono.create(sink -> {
+            asyncStub.lookup(grpcRequest, new StreamObserver<>() {
+                @Override
+                public void onNext(Lookup.LookupRes value) {
+                    sink.success(value);
+                }
 
-            @Override
-            public void onError(Throwable t) {
-                sink.error(t);
-            }
+                @Override
+                public void onError(Throwable t) {
+                    sink.error(t);
+                }
 
-            @Override
-            public void onCompleted() {
-            }
-        })).map(Object::toString)
+                @Override
+                public void onCompleted() {
+                }
+            });
+        }).map(Object::toString)
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response));
@@ -65,8 +68,8 @@ public class PhoneHandler {
 
     private Mono<ServerResponse> callGolangService(ServerRequest request, String path) {
         WebClient usedClient = (path == null)?
-                WebClient.builder().baseUrl("http://mock-lookup:"+request.pathVariable("path")).build() :
-                WebClient.builder().baseUrl("http://mock-lookup:"+path).build();
+                WebClient.builder().baseUrl("http://localhost:"+request.pathVariable("path")).build() :
+                WebClient.builder().baseUrl("http://localhost:"+path).build();
 
         return usedClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/phone")
