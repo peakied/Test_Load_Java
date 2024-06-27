@@ -22,7 +22,7 @@ public class Phone2Controller {
 
     @Autowired
     public Phone2Controller(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8082").build();
+        this.webClient = webClientBuilder.baseUrl("http://mock-lookup:8082").build();
         this.objectMapper = objectMapper;
     }
 

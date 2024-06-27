@@ -15,7 +15,7 @@ public class PhoneGrpcController {
     private final LookupServiceGrpc.LookupServiceStub asyncStub;
 
     public PhoneGrpcController() {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8083)
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("mock-lookup", 8083)
                 .usePlaintext()
                 .build();
         asyncStub = LookupServiceGrpc.newStub(channel);

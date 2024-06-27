@@ -48,7 +48,7 @@ public class CustomWebClient2Controller {
 
         this.webClient = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("http://localhost:8082")
+                .baseUrl("http://mock-lookup:8082")
                 .build();
     }
 

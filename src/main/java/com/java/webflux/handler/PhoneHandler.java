@@ -29,7 +29,7 @@ public class PhoneHandler {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     public PhoneHandler(ObjectMapper objectMapper) {
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 8083)
+        ManagedChannel channel = ManagedChannelBuilder.forAddress("mock-lookup", 8083)
                 .usePlaintext()
                 .build();
         this.objectMapper = objectMapper;
@@ -65,8 +65,8 @@ public class PhoneHandler {
 
     private Mono<ServerResponse> callGolangService(ServerRequest request, String path) {
         WebClient usedClient = (path == null)?
-                WebClient.builder().baseUrl("http://localhost:"+request.pathVariable("path")).build() :
-                WebClient.builder().baseUrl("http://localhost:"+path).build();
+                WebClient.builder().baseUrl("http://mock-lookup:"+request.pathVariable("path")).build() :
+                WebClient.builder().baseUrl("http://mock-lookup:"+path).build();
 
         return usedClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/phone")
