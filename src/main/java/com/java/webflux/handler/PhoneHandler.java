@@ -19,7 +19,6 @@ import protos.LookupServiceGrpc;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -44,23 +43,21 @@ public class PhoneHandler {
     public Mono<ServerResponse> getUsersFromGolangGrpc(ServerRequest request) {
         Lookup.LookupReq grpcRequest = Lookup.LookupReq.newBuilder().setPhoneNumber(request.pathVariable("id")).build();
 
-        return Mono.create(sink -> {
-            asyncStub.lookup(grpcRequest, new StreamObserver<>() {
-                @Override
-                public void onNext(Lookup.LookupRes value) {
-                    sink.success(value);
-                }
+        return Mono.create(sink -> asyncStub.lookup(grpcRequest, new StreamObserver<>() {
+            @Override
+            public void onNext(Lookup.LookupRes value) {
+                sink.success(value);
+            }
 
-                @Override
-                public void onError(Throwable t) {
-                    sink.error(t);
-                }
+            @Override
+            public void onError(Throwable t) {
+                sink.error(t);
+            }
 
-                @Override
-                public void onCompleted() {
-                }
-            });
-        }).map(Object::toString)
+            @Override
+            public void onCompleted() {
+            }
+        })).map(Object::toString)
                 .flatMap(response -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(response));
